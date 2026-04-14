@@ -1,7 +1,16 @@
+* {
+box-sizing: border-box;
+}
+
 body {
 margin: 0;
 font-family: Arial, sans-serif;
-background: linear-gradient(135deg, #1a1a2e, #2a2a4a);
+background: linear-gradient(135deg, #151528, #202040);
+min-height: 100vh;
+}
+
+#root {
+min-height: 100vh;
 }
 
 .app {
@@ -13,103 +22,213 @@ padding: 20px;
 .card {
 width: 100%;
 max-width: 420px;
-background: #2a2a4a;
-padding: 20px;
-border-radius: 20px;
-box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+background: #2c2c55;
+padding: 22px;
+border-radius: 24px;
+box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
 }
 
 h1 {
 text-align: center;
-color: #c9b6ff;
+color: #c5b3ff;
+font-size: 3rem;
+margin-top: 8px;
+margin-bottom: 24px;
 }
 
 h2 {
 text-align: center;
-margin-top: 20px;
+color: #ffffff;
+margin-top: 22px;
+margin-bottom: 16px;
+font-size: 2rem;
 }
 
 .field-group {
 display: flex;
 flex-direction: column;
-gap: 6px;
+gap: 8px;
+margin-bottom: 14px;
 }
 
 label {
-color: #eee;
-font-weight: bold;
+color: #f1f1f8;
+font-weight: 700;
+font-size: 15px;
+}
+
+.hint {
+font-size: 13px;
+color: #a8a8c0;
+margin-top: -2px;
+margin-bottom: 2px;
 }
 
 input {
 width: 100%;
-padding: 14px;
-margin: 8px 0;
-border-radius: 12px;
+padding: 16px 18px;
+border-radius: 18px;
 border: none;
-background: #1f1f33;
-color: white;
-font-size: 16px;
-min-height: 50px;
+background: #1b1b35;
+color: #ffffff;
+font-size: 17px;
+min-height: 64px;
 outline: none;
 -webkit-appearance: none;
+appearance: none;
+box-shadow: none;
 }
 
 input::placeholder {
-color: #aaa;
+color: #b9b9c9;
 }
 
-/* Fix iPhone date/time */
+/* iPhone/Safari date + time fix */
 input[type="date"],
 input[type="time"] {
-color: white;
+color: #ffffff !important;
+background: #1b1b35;
 color-scheme: dark;
+position: relative;
+z-index: 1;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+text-align: left;
+color: #ffffff;
+}
+
+input::-webkit-datetime-edit {
+opacity: 1 !important;
+color: #ffffff !important;
 }
 
 input[type="date"]::-webkit-datetime-edit,
 input[type="time"]::-webkit-datetime-edit {
-color: white;
+color: #ffffff !important;
+}
+
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field,
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+color: #ffffff !important;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
 filter: invert(1);
-}
-
-/* Buttons */
-button {
-width: 100%;
-padding: 14px;
-border-radius: 12px;
-border: none;
-background: linear-gradient(135deg, #7a5cff, #5b4bff);
-color: white;
-font-size: 16px;
-margin-top: 10px;
+opacity: 0.9;
 cursor: pointer;
 }
 
-.export {
-background: linear-gradient(135deg, #5b4bff, #7a5cff);
+button {
+width: 100%;
+padding: 16px;
+border-radius: 18px;
+border: none;
+background: linear-gradient(135deg, #7a4dff, #4d57ff);
+color: white;
+font-size: 17px;
+font-weight: 700;
+margin-top: 10px;
+cursor: pointer;
+transition: 0.2s ease;
 }
 
 button:hover {
-opacity: 0.9;
+opacity: 0.95;
+transform: translateY(-1px);
 }
 
-/* Totals */
-.totals {
-margin-top: 20px;
-color: white;
-text-align: center;
+button:active {
+transform: scale(0.98);
 }
 
-/* Mobile spacing fix */
-@media (max-width: 480px) {
-.card {
+.button-row {
+display: flex;
+flex-direction: column;
+gap: 12px;
+margin-top: 14px;
+}
+
+.secondary-btn {
+background: linear-gradient(135deg, #7a4dff, #4d57ff);
+}
+
+.danger-btn {
+background: linear-gradient(135deg, #ff5a7a, #ff3d5f);
+}
+
+.empty-text {
+color: #ffffff;
+text-align: left;
+font-size: 18px;
+}
+
+.shift-list {
+display: flex;
+flex-direction: column;
+gap: 14px;
+}
+
+.shift-item {
+background: #1b1b35;
+border-radius: 18px;
 padding: 16px;
+display: flex;
+flex-direction: column;
+gap: 14px;
 }
 
-input {
+.shift-info p {
+color: #ffffff;
+margin: 6px 0;
+font-size: 15px;
+}
+
+.delete-btn {
+background: linear-gradient(135deg, #ff5a7a, #ff3d5f);
+}
+
+.totals {
+margin-top: 24px;
+text-align: center;
+padding-bottom: 20px;
+}
+
+.totals p {
+color: #ffffff;
+font-size: 18px;
+font-weight: 700;
+margin: 12px 0;
+}
+
+@media (max-width: 480px) {
+.app {
+padding: 14px;
+}
+
+.card {
+padding: 18px;
+border-radius: 20px;
+}
+
+h1 {
+font-size: 2.8rem;
+}
+
+h2 {
+font-size: 1.8rem;
+}
+
+input,
+button {
 font-size: 16px;
 }
 }
+
