@@ -49,17 +49,55 @@ gap: 12px;
 
 input {
 width: 100%;
-padding: 12px;
-border-radius: 10px;
+padding: 14px 16px;
+border-radius: 12px;
 border: none;
 background: #1f1f33;
-color: white;
-font-size: 14px;
+color: #ffffff;
+font-size: 16px;
+min-height: 56px;
+outline: none;
+appearance: none;
+-webkit-appearance: none;
 }
 
 input::placeholder {
-color: #aaa;
+color: #b9b9c9;
 }
+
+/* Make date + time inputs readable on iPhone/Safari */
+input[type="date"],
+input[type="time"] {
+color: #ffffff;
+background: #1f1f33;
+color-scheme: dark;
+}
+
+/* Safari text inside date/time fields */
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+color: #ffffff;
+}
+
+/* Safari placeholder-ish text */
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field,
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+color: #ffffff;
+}
+
+/* Calendar / clock icons */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+filter: invert(1);
+opacity: 0.85;
+cursor: pointer;
+}
+
 
 button {
 padding: 12px;
@@ -279,4 +317,11 @@ padding: 10px;
 .ocr-box pre {
 font-size: 12px;
 }
+}
+
+label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f3f3ff;
+  margin-bottom: 4px;
 }
