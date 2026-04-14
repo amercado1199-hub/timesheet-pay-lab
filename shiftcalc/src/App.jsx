@@ -1,220 +1,127 @@
-import { useEffect, useState } from "react";
-import { createWorker } from "tesseract.js";
+import { useState, useEffect } from "react";
+import "./index.css";
 
 function App() {
 const [date, setDate] = useState("");
 const [startTime, setStartTime] = useState("");
 const [endTime, setEndTime] = useState("");
-const [breakMinutes, setBreakMinutes] = useState("");
-const [hourlyRate, setHourlyRate] = useState("");
-
-const [entries, setEntries] = useState(() => {
-const savedEntries = localStorage.getItem("shiftEntries");
-return savedEntries ? JSON.parse(savedEntries) : [];
-});
-
+const [breakMinutes, setBreakMinutes] = useState(30);
+const [hourlyRate, setHourlyRate] = useState(15);
+const [shifts, setShifts] = useState([]);
 const [image, setImage] = useState(null);
-const [ocrText, setOcrText] = useState("");
-const [detectedTimes, setDetectedTimes] = useState([]);
-const [isReadingImage, setIsReadingImage] = useState(false);
-const [ocrError, setOcrError] = useState("");
 
+// Load saved data
 useEffect(() => {
-localStorage.setItem("shiftEntries", JSON.stringify(entries));
-}, [entries]);
+const saved = localStorage.getItem("shifts");
+if (saved) setShifts(JSON.parse(saved));
+}, []);
 
-function handleImageChange(e) {
-const file = e.target.files[0];
-if (!file) return;
+// Save data
+useEffect(() => {
+localStorage.setItem("shifts", JSON.stringify(shifts));
+}, [shifts]);
 
-const imageUrl = URL.createObjectURL(file);
-setImage(imageUrl);
-setOcrText("");
-setDetectedTimes([]);
-setOcrError("");
+function calculateHours(start, end, breakMin) {
+const startDate = new Date(`1970-01-01T${start}:00`);
+const endDate = new Date(`1970-01-01T${end}:00`);
+
+let diff = (endDate - startDate) / 1000 / 60 / 60;
+diff -= breakMin / 60;
+
+return diff > 0 ? diff : 0;
 }
 
-async function handleReadImage() {
-if (!image) return;
-
-setIsReadingImage(true);
-setOcrError("");
-setOcrText("");
-setDetectedTimes([]);
-
-let worker;
-
-try {
-worker = await createWorker("eng");
-
-const {
-data: { text },
-} = await worker.recognize(image);
-
-setOcrText(text);
-autoFillFromText(text);
-} catch (error) {
-console.error(error);
-setOcrError("Could not read text from image. Try a clearer photo.");
-} finally {
-if (worker) {
-await worker.terminate();
-}
-setIsReadingImage(false);
-}
-}
-
-function autoFillFromText(text) {
-const cleaned = text.replace(/\n/g, " ").trim();
-
-const timeMatches =
-cleaned.match(/\b(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM|am|pm)?\b/g) || [];
-
-setDetectedTimes(timeMatches);
-
-if (timeMatches.length >= 2) {
-setStartTime(convertTo24Hour(timeMatches[0]));
-setEndTime(convertTo24Hour(timeMatches[1]));
-}
-
-const breakMatch = cleaned.match(/break[:\s]+(\d{1,3})/i);
-if (breakMatch) {
-setBreakMinutes(breakMatch[1]);
-}
-}
-
-function convertTo24Hour(timeString) {
-const match = timeString.match(/(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/);
-if (!match) return "";
-
-let hours = Number(match[1]);
-const minutes = match[2];
-const period = match[3]?.toUpperCase();
-
-if (period === "PM" && hours !== 12) hours += 12;
-if (period === "AM" && hours === 12) hours = 0;
-
-return `${String(hours).padStart(2, "0")}:${minutes}`;
-}
-
-function handleSubmit(e) {
+function handleAddShift(e) {
 e.preventDefault();
 
-const start = new Date(`2000-01-01T${startTime}`);
-const end = new Date(`2000-01-01T${endTime}`);
+const hours = calculateHours(startTime, endTime, breakMinutes);
 
-let diffMs = end - start;
-if (diffMs < 0) {
-diffMs += 24 * 60 * 60 * 1000;
-}
+const overtimeHours = hours > 8 ? hours - 8 : 0;
+const regularHours = hours > 8 ? 8 : hours;
 
-const totalHours = diffMs / (1000 * 60 * 60);
-const breakHours = Number(breakMinutes || 0) / 60;
-const hoursWorked = Math.max(totalHours - breakHours, 0);
-const regularPay = hoursWorked * Number(hourlyRate || 0);
+const regularPay = regularHours * hourlyRate;
+const overtimePay = overtimeHours * hourlyRate * 1.5;
 
-const newEntry = {
+const newShift = {
 date,
-startTime,
-endTime,
-breakMinutes: Number(breakMinutes || 0),
-hourlyRate: Number(hourlyRate || 0),
-hoursWorked,
+hours,
+regularHours,
+overtimeHours,
 regularPay,
+overtimePay,
 };
 
-setEntries([...entries, newEntry]);
+setShifts([...shifts, newShift]);
 
+// Reset form
 setDate("");
 setStartTime("");
 setEndTime("");
-setBreakMinutes("");
-setHourlyRate("");
-setOcrText("");
-setDetectedTimes([]);
-setOcrError("");
-setImage(null);
 }
 
-function handleDelete(indexToDelete) {
-const updatedEntries = entries.filter((_, index) => index !== indexToDelete);
-setEntries(updatedEntries);
-}
+const totalHours = shifts.reduce((sum, s) => sum + s.hours, 0);
+const totalRegular = shifts.reduce((sum, s) => sum + s.regularHours, 0);
+const totalOT = shifts.reduce((sum, s) => sum + s.overtimeHours, 0);
+const totalRegularPay = shifts.reduce((sum, s) => sum + s.regularPay, 0);
+const totalOTPay = shifts.reduce((sum, s) => sum + s.overtimePay, 0);
 
 function exportCSV() {
-if (entries.length === 0) return;
+const rows = [
+["Date", "Hours", "Regular Hours", "OT Hours", "Regular Pay", "OT Pay"],
+...shifts.map((s) => [
+s.date,
+s.hours.toFixed(2),
+s.regularHours.toFixed(2),
+s.overtimeHours.toFixed(2),
+s.regularPay.toFixed(2),
+s.overtimePay.toFixed(2),
+]),
+];
 
-const headers =
-"Date,Start Time,End Time,Break Minutes,Hourly Rate,Hours Worked,Regular Pay";
-
-const rows = entries.map((entry) =>
-[
-entry.date,
-entry.startTime,
-entry.endTime,
-entry.breakMinutes,
-entry.hourlyRate,
-entry.hoursWorked.toFixed(2),
-entry.regularPay.toFixed(2),
-].join(",")
-);
-
-const csv = [headers, ...rows].join("\n");
+const csv = rows.map((r) => r.join(",")).join("\n");
 const blob = new Blob([csv], { type: "text/csv" });
-const url = URL.createObjectURL(blob);
 
-const a = document.createElement("a");
-a.href = url;
-a.download = "shiftcalc-shifts.csv";
-a.click();
-
-URL.revokeObjectURL(url);
+const link = document.createElement("a");
+link.href = URL.createObjectURL(blob);
+link.download = "shifts.csv";
+link.click();
 }
-
-const totalHoursWorked = entries.reduce(
-(sum, entry) => sum + entry.hoursWorked,
-0
-);
-
-const weightedBasePay = entries.reduce(
-(sum, entry) => sum + entry.hoursWorked * entry.hourlyRate,
-0
-);
-
-const averageRate =
-totalHoursWorked > 0 ? weightedBasePay / totalHoursWorked : 0;
-
-const regularHours = Math.min(totalHoursWorked, 40);
-const overtimeHours = Math.max(totalHoursWorked - 40, 0);
-const regularPay = regularHours * averageRate;
-const overtimePay = overtimeHours * averageRate * 1.5;
-const totalEarned = regularPay + overtimePay;
 
 return (
 <div className="app">
+<div className="card">
 <h1>ShiftCalc</h1>
 
-<form onSubmit={handleSubmit}>
+<form onSubmit={handleAddShift}>
+<div className="field-group">
+<label>Date</label>
 <input
 type="date"
 value={date}
 onChange={(e) => setDate(e.target.value)}
 required
 />
+</div>
 
+<div className="field-group">
+<label>Start Time</label>
 <input
 type="time"
 value={startTime}
 onChange={(e) => setStartTime(e.target.value)}
 required
 />
+</div>
 
+<div className="field-group">
+<label>End Time</label>
 <input
 type="time"
 value={endTime}
 onChange={(e) => setEndTime(e.target.value)}
 required
 />
+</div>
 
 <input
 type="number"
@@ -225,101 +132,35 @@ onChange={(e) => setBreakMinutes(e.target.value)}
 
 <input
 type="number"
-step="0.01"
 placeholder="Hourly rate"
 value={hourlyRate}
 onChange={(e) => setHourlyRate(e.target.value)}
-required
 />
 
-<label className="upload-label">Upload Time Card Image</label>
-<input type="file" accept="image/*" onChange={handleImageChange} />
-
-{image && (
-<div className="image-preview">
-<img src={image} alt="Uploaded time card" className="preview-image" />
-
-<button
-type="button"
-onClick={handleReadImage}
-disabled={isReadingImage}
->
-{isReadingImage ? "Reading Image..." : "Extract Text From Image"}
-</button>
-</div>
-)}
-
-{ocrError && <p className="error-text">{ocrError}</p>}
-
-{ocrText && (
-<div className="ocr-box">
-<h3>OCR Text</h3>
-<pre>{ocrText}</pre>
-</div>
-)}
-
-{detectedTimes.length > 0 && (
-<div className="ocr-box">
-<h3>Detected Times</h3>
-{detectedTimes.map((time, index) => (
-<div key={`${time}-${index}`} style={{ marginBottom: "8px" }}>
-<button
-type="button"
-onClick={() => setStartTime(convertTo24Hour(time))}
-style={{ marginRight: "8px" }}
->
-Use {time} as Start
-</button>
-
-<button
-type="button"
-onClick={() => setEndTime(convertTo24Hour(time))}
->
-Use {time} as End
-</button>
-</div>
-))}
-</div>
-)}
+<label>Upload Time Card Image</label>
+<input type="file" onChange={(e) => setImage(e.target.files[0])} />
 
 <button type="submit">Add Shift</button>
 </form>
 
-<div style={{ marginTop: "20px" }}>
-<button type="button" onClick={exportCSV}>
+<button className="export" onClick={exportCSV}>
 Export CSV
 </button>
-</div>
 
 <h2>Shifts</h2>
+{shifts.length === 0 && <p>No shifts added yet.</p>}
 
-{entries.length === 0 ? (
-<p>No shifts added yet.</p>
-) : (
-entries.map((entry, index) => (
-<div key={index} className="shift-item">
-<p>
-{entry.date} | {entry.startTime} - {entry.endTime} |{" "}
-{entry.hoursWorked.toFixed(2)} hrs | ${entry.regularPay.toFixed(2)}
-</p>
-
-<button className="delete-btn" onClick={() => handleDelete(index)}>
-Delete
-</button>
+<div className="totals">
+<p>Total Hours: {totalHours.toFixed(2)}</p>
+<p>Regular Hours: {totalRegular.toFixed(2)}</p>
+<p>Overtime Hours: {totalOT.toFixed(2)}</p>
+<p>Regular Pay: ${totalRegularPay.toFixed(2)}</p>
+<p>Overtime Pay: ${totalOTPay.toFixed(2)}</p>
+<p>Total Pay: ${(totalRegularPay + totalOTPay).toFixed(2)}</p>
 </div>
-))
-)}
-
-<h2>Total Hours: {totalHoursWorked.toFixed(2)}</h2>
-<h2>Regular Hours: {regularHours.toFixed(2)}</h2>
-<h2>Overtime Hours: {overtimeHours.toFixed(2)}</h2>
-<h2>Regular Pay: ${regularPay.toFixed(2)}</h2>
-<h2>Overtime Pay: ${overtimePay.toFixed(2)}</h2>
-<h2>Total Earned: ${totalEarned.toFixed(2)}</h2>
+</div>
 </div>
 );
 }
 
 export default App;
-
-
