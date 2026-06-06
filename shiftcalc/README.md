@@ -1,16 +1,103 @@
-# React + Vite
+# ShiftCalc
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Description
 
-Currently, two official plugins are available:
+ShiftCalc is a React application that helps users track work shifts, calculate regular and overtime pay, save shift data using localStorage, export shift records as a CSV file, and view upcoming U.S. public holidays using an external API.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This application was built as a single-page React application using React Router, React Hooks, and asynchronous API requests.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the ESLint configuration
+* Add and track work shifts
+* Calculate regular hours and overtime hours
+* Calculate total pay based on hourly rate
+* Save shift history using localStorage
+* Delete individual shifts
+* Clear all saved shifts
+* Export shift records to CSV
+* View upcoming U.S. public holidays
+* Responsive design for desktop and mobile devices
+* Loading, error, and empty states
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Technologies Used
+
+* React
+* React Router
+* JavaScript
+* HTML
+* CSS
+* Vite
+
+---
+
+## API Used
+
+Nager.Date Public Holiday API
+
+Endpoint:
+
+https://date.nager.at/api/v3/NextPublicHolidays/US
+
+The API is used to retrieve upcoming U.S. public holidays and display them dynamically on the Holidays page.
+
+---
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+```
+
+2. Navigate into the project folder:
+
+```bash
+cd shiftcalc
+```
+
+3. Install dependencies:
+
+```bash
+npm install
+```
+
+4. Start the development server:
+
+```bash
+npm run dev
+```
+
+---
+
+## Project Structure
+
+```text
+src/
+├── App.jsx
+├── main.jsx
+├── index.css
+```
+
+---
+
+## Future Improvements
+
+* OCR time card scanning with Tesseract.js
+* Weekly and monthly reports
+* Tax estimation calculator
+* Multiple employee support
+* User authentication
+* Cloud data storage
+
+---
+
+## Author
+
+Alyssa Mercado
+
+Software Engineer
